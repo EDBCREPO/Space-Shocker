@@ -9,10 +9,10 @@ Raylib - https://www.raylib.com/
 
 ## Preview
 ### V0.1
-![](https://github.com/EDBCREPO/Space-Shocker/blob/main/Assets/preview/v01.gif?raw=true)
+![](https://github.com/EDBCREPO/Space-Shocker/blob/main/assets/preview/v01.gif?raw=true)
 
 ### Goal
-![](https://github.com/EDBCREPO/Space-Shocker/blob/main/Assets/preview/game.png?raw=true)
+![](https://github.com/EDBCREPO/Space-Shocker/blob/main/assets/preview/game.png?raw=true)
 
 ## Build & Use
 ```bash

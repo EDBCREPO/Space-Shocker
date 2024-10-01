@@ -12,6 +12,7 @@
 /*────────────────────────────────────────────────────────────────────────────*/
 
 #include <nodepp/encoder.h>
+#include <nodepp/timer.h>
 #include <nodepp/event.h>
 #include <nodepp/json.h>
 #include <nodepp/map.h>

@@ -1,10 +1,9 @@
 #include <nodepp/nodepp.h>
-#include <nodepp/timer.h>
 
 using namespace nodepp;
 
-#include "Assets/script/game.cpp"
-#include "Assets/scenes/scene_1.cpp"
+#include "assets/script/game.cpp"
+#include "assets/scenes/scene_1.cpp"
 
 void onMain() {
 
