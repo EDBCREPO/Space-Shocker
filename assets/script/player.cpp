@@ -6,23 +6,28 @@ namespace rl { namespace game {
 
     void player_power( ptr_t<Item> self, ptr_t<Item> player ){
 
-        auto sos = player->GetAttr("setPos").as<function_t<void,Vector2>>();
-        auto gos = player->GetAttr("getPos").as<function_t<Vector2>>();
-        auto imv = player->GetAttr("isMoving").as<function_t<bool>>();
-        auto tlp = player->GetAttr("Teleport").as<function_t<void>>();
-
         struct NODE {
             Texture rec1 = LoadTexture( "assets/sprites/effect/recAn1.png" );
-            Texture rec2 = LoadTexture( "assets/sprites/effect/recAn2.png" );
+            queue_t<Rectangle> tail;
             float frame  = 0.0f;
             bool      b  = 0;
         };  ptr_t<NODE> obj = new NODE();
 
+    /*.........................................................................*/
+
+        auto sos = player->GetAttr("setPos").as<function_t<void,Vector2>>();
+        auto gos = player->GetAttr("getPos").as<function_t<Vector2>>();
+        auto stt = player->GetAttr("getState").as<function_t<int*>>();
+        auto imv = player->GetAttr("isMoving").as<function_t<bool>>();
+        auto tlp = player->GetAttr("Teleport").as<function_t<void>>();
+
+    /*.........................................................................*/
+
         player->onDraw([=](){
             if( !obj->b ){ return; } DrawTexturePro(
                 obj->rec1, { obj->frame, 0, 64, 64 }, 
-                { gos().x, gos().y, 80, 80 },
-                { 40, 40 }, 0, WHITE
+                { gos().x, gos().y, 100, 100 },
+                { 50, 50 }, 0, WHITE
             );
         });
 
@@ -30,24 +35,51 @@ namespace rl { namespace game {
             static uchar x = 1; 
         coStart
 
-            while( !IsKeyDown(KEY_LEFT_SHIFT) || !imv() ){
-                x = 1; obj->b = 0; coNext; 
-            }   tlp();
+            while( IsKeyDown(KEY_SPACE) ){ coNext; }
+
+            while( !IsKeyDown(KEY_SPACE) || !imv() )
+                 { x = 1; obj->b = 0; coNext; } 
+
+            obj->tail.push({
+                .x = gos().x, 
+                .y = gos().y,
+                .width = 30.0f
+            }); tlp();
 
             while( x != 0 ){
                 obj->frame = 64 * ( x - 1 );
-                x++; x %= 12; coDelay( 20 );
+                x++; x %= 12; coDelay( 10 );
                 obj->b = 1;
-            }   
-
-            while( IsKeyDown(KEY_LEFT_SHIFT) ){ coNext; }
+            }
 
         coStop
         }();});
 
+    /*.........................................................................*/
+
+        player->onDraw([=](){
+            auto x = obj->tail.first(); while( x!=nullptr ){
+            auto y = x->next;
+                DrawCircleLines( x->data.x, x->data.y, x->data.width, YELLOW );
+                x = y;
+            }
+        });
+
+        self->onLoop([=]( float delta ){
+            auto x = obj->tail.first(); while( x!=nullptr ){
+            auto y = x->next;
+
+                if( x->data.width <= 0 ){ goto DONE; }
+                    x->data.width -= 100.0f * delta;
+
+                x = y; continue; DONE:; obj->tail.erase(x); x=y;
+            }
+        });
+
+    /*.........................................................................*/
+
         self->onRemove([=](){
             if( IsTextureReady(obj->rec1) ){ UnloadTexture( obj->rec1 ); }
-            if( IsTextureReady(obj->rec2) ){ UnloadTexture( obj->rec2 ); }
         });
 
     }
@@ -60,7 +92,7 @@ namespace rl { namespace game {
 
     struct bullet_t {
         Vector2 pos = { 0, 0 };
-        float speed = 500.0f;
+        float speed = 600.0f;
         float size  = 10.0f;
         float angle = 0.0f;
         bool  b = 0;
@@ -78,6 +110,8 @@ namespace rl { namespace game {
             uchar type  = 0;
         };  ptr_t<NODE> obj = new NODE();
 
+    /*.........................................................................*/
+
         self->SetAttr( "aim", function_t<void,Vector2,float>(
             [=]( Vector2 pos, float angle ){ obj->angle = angle;
                 obj->pos[0].x = pos.x - 20 * cos( ( angle + 45 ) * DEG2RAD );
@@ -87,11 +121,18 @@ namespace rl { namespace game {
             })
         );
 
+        auto stt = player->GetAttr("getState").as<function_t<int*>>();
+
+    /*.........................................................................*/
+
         self->onLoop([=]( float delta ){[=](){
             static bool b = 0; 
         coStart
 
+            while( stt()[ stt()[5] ] <= 0 ){ coNext; }
+
             if( IsMouseButtonDown(0) ){ 
+                console::log( "->", stt()[ stt()[5] ] );
                 coDelay(100); do {
 
                     bullet_t bullet1; 
@@ -118,11 +159,13 @@ namespace rl { namespace game {
 
                     b =! b;
 
-                } while(0);
+                } while(0); stt()[ stt()[5] ]--;
             }
 
         coStop
         }();});
+
+    /*.........................................................................*/
 
         self->onLoop([=]( float delta ){
             
@@ -152,6 +195,8 @@ namespace rl { namespace game {
         
         });
 
+    /*.........................................................................*/
+
         player->onDraw([=](){
 
             auto x = obj->bullet.first(); while( x!=nullptr ){
@@ -162,14 +207,14 @@ namespace rl { namespace game {
             }
 
             auto y = obj->flash.first(); while( y!=nullptr ){
-                if( y->data.b )
-                  { DrawCircleV( y->data.pos, y->data.size, YELLOW ); }
-                else 
-                  { DrawCircleLinesV( y->data.pos, y->data.size, YELLOW ); }
+                if( y->data.b ){ DrawCircleV( y->data.pos, y->data.size, YELLOW ); }
+                else      { DrawCircleLinesV( y->data.pos, y->data.size, YELLOW ); }
                 y = y->next;
             }
 
         });
+
+    /*.........................................................................*/
 
         self->onRemove([=](){
             if( IsTextureReady( obj->img ) ){ UnloadTexture( obj->img ); }
@@ -197,9 +242,13 @@ namespace rl { namespace game {
             queue_t<prop_t> list;
         };  ptr_t<NODE> obj = new NODE();
 
+    /*.........................................................................*/
+
         self->SetAttr( "append", function_t<void,prop_t>([=]( prop_t arg ){
             obj->list.push( arg );
         }));
+
+    /*.........................................................................*/
 
         self->onLoop([=]( float delta ){
             auto x = obj->list.first(); while( x!=nullptr ){ auto y = x->next;
@@ -211,13 +260,14 @@ namespace rl { namespace game {
 
         player->onDraw([=](){
             auto x = obj->list.first(); while( x!=nullptr ){
-                DrawTexturePro(
-                    obj->img, { 0, 0, 16, 16 }, 
+                DrawTexturePro( obj->img, { 0, 0, 16, 16 }, 
                     { x->data.pos.x, x->data.pos.y, x->data.size, x->data.size }, 
                     { 8, 8 }, x->data.angle, WHITE 
                 );  x = x->next;
             }
         });
+
+    /*.........................................................................*/
 
         self->onRemove([=](){
             if( IsTextureReady( obj->img ) ){ UnloadTexture( obj->img ); }
@@ -234,23 +284,29 @@ namespace rl { namespace game {
     void player( ptr_t<Item> self ) {
 
         struct NODE {
-            Rectangle pos = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 32, 32 };
-            Texture   img = LoadTexture( "assets/sprites/player/player.png" );
-            Vector2   dir = { 0, 0 };
-            bool    ismov = false;
-            float     spd = 300;
-            float     ang = 0;
-            bool        b = 0;
+            Rectangle pos  = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 32, 32 };
+            Texture   img  = LoadTexture( "assets/sprites/player/player.png" );
+            int  bullet[6] = { 300, 100, 100, 10, 3, 0 };
+            Vector2   dir  = { 0, 0 };
+            bool    ismov  = false;
+            float     spd  = 300;
+            float     ang  = 0;
+            bool        b  = 0;
         };  ptr_t<NODE> obj = new NODE();
+
+    /*.........................................................................*/
 
         self->SetAttr("setPos",function_t<void,Vector2>([=]( Vector2 pos ){ 
             obj->pos.x = pos.x; obj->pos.y = pos.y;
         }));
 
+        self->SetAttr("getState",function_t<int*>([=](){
+            return obj->bullet;
+        }));
+
         self->SetAttr("Teleport",function_t<void>([=](){
-            obj->pos.x += obj->dir.x * 100;
+            obj->pos.x += obj->dir.x * 100; 
             obj->pos.y += obj->dir.y * 100;
-            console::log("teleported");
         }));
 
         self->SetAttr("isMoving",function_t<bool>([=](){
@@ -261,9 +317,13 @@ namespace rl { namespace game {
             return Vector2({ obj->pos.x, obj->pos.y }); 
         }));
 
+    /*.........................................................................*/
+
         Item prop   ( player_prop, self );
         Item power  ( player_power, self );
         Item bullet ( player_bullet, self );
+
+    /*.........................................................................*/
 
         self->onDraw([=](){
             float x = type::cast<float>(obj->b) * 64;
@@ -272,6 +332,8 @@ namespace rl { namespace game {
                 obj->pos, { 16, 20 }, obj->ang, WHITE 
             );
         });
+
+    /*.........................................................................*/
 
         auto idt = timer::interval([=](){ obj->b =! obj->b; },100);
 
@@ -296,10 +358,15 @@ namespace rl { namespace game {
         coStop
         }();});
 
+    /*.........................................................................*/
+
         self->onLoop([=]( float delta ){ obj->ismov=0;
-            
-            obj->pos.x += obj->dir.x*delta*obj->spd; 
-            obj->pos.y += obj->dir.y*delta*obj->spd;
+
+              if( obj->pos.y > GetRenderHeight() + 5 ){ obj->pos.y =-5; }
+            elif( obj->pos.y < 0 ){ obj->pos.y = GetRenderHeight() + 5; }
+
+              if( obj->pos.x > GetRenderWidth() + 5 ){ obj->pos.x =-5; }
+            elif( obj->pos.x < 0 ){ obj->pos.x = GetRenderWidth() + 5; }
 
               if( IsKeyDown( 'W' ) ){ obj->dir.y =-1; obj->ismov=1; }
             elif( IsKeyDown( 'S' ) ){ obj->dir.y = 1; obj->ismov=1; }
@@ -308,6 +375,9 @@ namespace rl { namespace game {
               if( IsKeyDown( 'A' ) ){ obj->dir.x =-1; obj->ismov=1; }
             elif( IsKeyDown( 'D' ) ){ obj->dir.x = 1; obj->ismov=1; }
             else                    { obj->dir.x = 0; }
+            
+            obj->pos.x += obj->dir.x * delta * obj->spd; 
+            obj->pos.y += obj->dir.y * delta * obj->spd;
 
             auto aim = bullet.GetAttr("aim"); if( aim.has_value() ){ 
                 aim.as<function_t<void,Vector2,float>>()( 
@@ -321,6 +391,8 @@ namespace rl { namespace game {
             ) * RAD2DEG + 90;
 
         });
+
+    /*.........................................................................*/
 
         self->onRemove([=](){
             if( IsTextureReady( obj->img ) )

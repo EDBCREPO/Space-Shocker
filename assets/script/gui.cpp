@@ -7,13 +7,11 @@ namespace rl { namespace game {
     void gui_aim( ptr_t<Item> self ) {
 
         struct NODE {
-            bool b = 0;
+            bool b = 0; 
             Vector2 pos = { 0, 0 };
-        };  ptr_t<NODE> obj = new NODE();
-
+        };  ptr_t<NODE> obj = new NODE(); 
+        
         HideCursor(); DisableCursor();
-
-        auto idt = timer::interval([=](){ obj->b =! obj->b; }, 150 );
 
         self->onDraw([=](){
             if( obj->b ){
@@ -30,13 +28,35 @@ namespace rl { namespace game {
             }
         });
 
-        self->onLoop([=]( float delta ){
+        self->onLoop([=]( float delta ){[=](){
             obj->pos.x = GetMouseX();
             obj->pos.y = GetMouseY();
-        });
+        coStart
+            obj->b =! obj->b;
+            coDelay( 150 );
+        coStop
+        }();});
 
-        self->onRemove([=](){ 
-            timer::clear( idt );
+    }
+
+}}
+
+/*────────────────────────────────────────────────────────────────────────────*/
+
+namespace rl { namespace game {
+
+    void player_stats( ptr_t<Item> self, ptr_t<Item> gui ){
+
+        auto stt = GetScene().GetItem("player").GetAttr("getState").as<function_t<int*>>();
+
+        gui->onDraw([=](){
+
+            float h = GetRenderHeight(), w = GetRenderWidth();
+
+            float x = type::cast<float>( stt()[ stt()[5] ] );
+
+            DrawRectangleV( { w/10*1.5f+12, 10*h/12 }, { x/3, 10 }, YELLOW );
+
         });
 
     }
@@ -49,11 +69,19 @@ namespace rl { namespace game {
 
     void gui( ptr_t<Item> self ){
 
-        Item aim ( gui_aim );
+        Item aim ( gui_aim ); Item p_stat( player_stats, self );
 
-        self->onDraw([=](){ auto y = GetRenderHeight() - GetRenderHeight()*0.15f;
-            DrawRectangleV( { 0, 0 }, { GetRenderWidth()*1.0f, GetRenderHeight()*0.10f }, BLACK );
-            DrawRectangleV( { 0, y }, { GetRenderWidth()*1.0f, GetRenderHeight()*0.15f }, BLACK );
+        self->onDraw([=](){ 
+
+            float h = GetRenderHeight(), w = GetRenderWidth();
+
+            DrawRectangleV( { 0, 0     }, { w, h/10 }, BLACK );
+            DrawRectangleV( { 0, 7*h/8 }, { w, h/8  }, BLACK );
+
+            DrawRectangleLines( 28, 10*h/12-2, w/10, w/10, WHITE );
+            DrawRectangleV( { 30, 10*h/12 }, { w/10, w/10 }, WHITE );
+            DrawRectangleLines( 30+2, 10*h/12+2, w/10-4, w/10-4, BLACK );
+
             DrawFPS( 5, 5 );
         });
 

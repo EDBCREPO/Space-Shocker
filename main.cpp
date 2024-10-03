@@ -7,7 +7,7 @@ using namespace nodepp;
 
 void onMain() {
 
-    rl::Init( { 800, 600 }, 60, "Game" );
+    rl::Init( { 800, 600 }, 60, "Space-Shoker" );
 
     rl::AppendScene( rl::scene::scene_1 );
 
