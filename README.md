@@ -21,5 +21,5 @@ Raylib - https://www.raylib.com/
 
 ## Build & Use
 ```bash
-time g++ -o main main.cpp -I ./Modules -L ./lib -lraylib -lssl -lcrypto -std=c++11 ; ./main
+time g++ -o main main.cpp -I ./include -L ./lib -lraylib -std=c++11 ; ./main
 ```
