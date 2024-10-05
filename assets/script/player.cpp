@@ -11,6 +11,7 @@ namespace rl { namespace game {
             queue_t<Rectangle> tail;
             float frame  = 0.0f;
             bool      b  = 0;
+            bool      d  = 0;
         };  ptr_t<NODE> obj = new NODE();
 
     /*.........................................................................*/
@@ -18,8 +19,21 @@ namespace rl { namespace game {
         auto sos = player->GetAttr("setPos").as<function_t<void,Vector2>>();
         auto gos = player->GetAttr("getPos").as<function_t<Vector2>>();
         auto stt = player->GetAttr("getState").as<function_t<int*>>();
+        auto def = player->GetAttr("getDeflt").as<function_t<int*>>();
         auto imv = player->GetAttr("isMoving").as<function_t<bool>>();
         auto tlp = player->GetAttr("Teleport").as<function_t<void>>();
+
+    /*.........................................................................*/
+
+        player->SetAttr("recharge",function_t<void,bool>([=]( bool d ){
+            if( d == true ){
+                stt()[3] = def()[3];
+                stt()[2] = def()[2];
+                stt()[1] = def()[1];
+            } else {
+                stt()[0] = def()[0];
+            }   obj->d = true;
+        }));
 
     /*.........................................................................*/
 
@@ -37,8 +51,12 @@ namespace rl { namespace game {
 
             while( IsKeyDown(KEY_SPACE) ){ coNext; }
 
-            while( !IsKeyDown(KEY_SPACE) || !imv() )
-                 { x = 1; obj->b = 0; coNext; } 
+            while( !IsKeyDown(KEY_SPACE) || !imv() ){ 
+               if( obj->d ){ coGoto(1); } 
+               x = 1; obj->b = 0; coNext;
+            }
+
+            if( stt()[4] <= 0 ){ coGoto(0); }
 
             obj->tail.push({
                 .x = gos().x, 
@@ -46,10 +64,10 @@ namespace rl { namespace game {
                 .width = 30.0f
             }); tlp();
 
-            while( x != 0 ){
+            coYield(1); while( x != 0 ){
                 obj->frame = 64 * ( x - 1 );
                 x++; x %= 12; coDelay( 10 );
-                obj->b = 1;
+                obj->b = 1; obj->d = 0;
             }
 
         coStop
@@ -59,9 +77,8 @@ namespace rl { namespace game {
 
         player->onDraw([=](){
             auto x = obj->tail.first(); while( x!=nullptr ){
-            auto y = x->next;
                 DrawCircleLines( x->data.x, x->data.y, x->data.width, YELLOW );
-                x = y;
+                x = x->next;
             }
         });
 
@@ -286,7 +303,8 @@ namespace rl { namespace game {
         struct NODE {
             Rectangle pos  = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 32, 32 };
             Texture   img  = LoadTexture( "assets/sprites/player/player.png" );
-            int  bullet[6] = { 300, 100, 100, 10, 3, 0 };
+            int  bullet[6] = { 100, 300, 100, 5, 5, 1 };
+            int  defolt[6] = { 100, 300, 100, 5, 5, 1 };
             Vector2   dir  = { 0, 0 };
             bool    ismov  = false;
             float     spd  = 300;
@@ -300,6 +318,10 @@ namespace rl { namespace game {
             obj->pos.x = pos.x; obj->pos.y = pos.y;
         }));
 
+        self->SetAttr("getDeflt",function_t<int*>([=](){
+            return obj->defolt;
+        }));
+
         self->SetAttr("getState",function_t<int*>([=](){
             return obj->bullet;
         }));
@@ -307,6 +329,7 @@ namespace rl { namespace game {
         self->SetAttr("Teleport",function_t<void>([=](){
             obj->pos.x += obj->dir.x * 100; 
             obj->pos.y += obj->dir.y * 100;
+            obj->bullet[4]--;
         }));
 
         self->SetAttr("isMoving",function_t<bool>([=](){
@@ -337,6 +360,17 @@ namespace rl { namespace game {
 
         auto idt = timer::interval([=](){ obj->b =! obj->b; },100);
 
+    /*.........................................................................*/
+
+        self->onLoop([=]( float delta ){[=](){
+        coStart; coDelay(2000);
+            if( obj->bullet[4]<=obj->defolt[4] )
+              { obj->bullet[4]++; }
+        coStop;
+        }();});
+
+    /*.........................................................................*/
+
         self->onLoop([=]( float delta ){[=](){
         coStart; coDelay(30);
             
@@ -362,11 +396,11 @@ namespace rl { namespace game {
 
         self->onLoop([=]( float delta ){ obj->ismov=0;
 
-              if( obj->pos.y > GetRenderHeight() + 5 ){ obj->pos.y =-5; }
-            elif( obj->pos.y < 0 ){ obj->pos.y = GetRenderHeight() + 5; }
+              if( obj->pos.y > GetRenderHeight() ){ obj->pos.y = GetRenderHeight(); }
+            elif( obj->pos.y < 0 )                { obj->pos.y = 0; }
 
-              if( obj->pos.x > GetRenderWidth() + 5 ){ obj->pos.x =-5; }
-            elif( obj->pos.x < 0 ){ obj->pos.x = GetRenderWidth() + 5; }
+              if( obj->pos.x > GetRenderWidth() ){ obj->pos.x = GetRenderWidth(); }
+            elif( obj->pos.x < 0 )               { obj->pos.x = 0; }
 
               if( IsKeyDown( 'W' ) ){ obj->dir.y =-1; obj->ismov=1; }
             elif( IsKeyDown( 'S' ) ){ obj->dir.y = 1; obj->ismov=1; }

@@ -155,6 +155,10 @@ public:
     object_t GetAttr( string_t name ) const noexcept { 
         return obj->attr[name]; 
     }
+
+    bool HasAttr( string_t name ) const noexcept {
+        return obj->attr.has( name );
+    }
     
     object_t GetAttr() const noexcept { 
         return obj->attr; 
@@ -229,6 +233,10 @@ public:
     object_t GetAttr( string_t name ) const noexcept { 
         return obj->attr[name]; 
     }
+
+    bool HasAttr( string_t name ) const noexcept {
+        return obj->attr.has( name );
+    }
     
     object_t GetAttr() const noexcept { 
         return obj->attr; 
@@ -249,6 +257,10 @@ public:
 
     Item& GetItem( string_t name ) const noexcept {
         return obj->items[name];
+    }
+
+    bool HasItem( string_t name ) const noexcept {
+        return obj->items.has( name );
     }
 
     void RemoveItem() const noexcept {
