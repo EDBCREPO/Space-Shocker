@@ -29,49 +29,40 @@ namespace rl {
 
 namespace rl {
 
-    void RenderCanva( function_t<int> cb, RenderTexture2D& txt ){
-        BeginTextureMode( txt ); while( cb() == -2 )
-        { process::next(); } EndTextureMode();
+    void RenderCanva( function_t<void> cb, RenderTexture2D& txt ){
+        BeginTextureMode( txt ); cb(); EndTextureMode();
     }
 
-    void RenderVR( function_t<int> cb, VrStereoConfig& vr ){
-        BeginVrStereoMode( vr ); while( cb() == -2 )
-        { process::next(); } EndVrStereoMode();
+    void RenderVR( function_t<void> cb, VrStereoConfig& vr ){
+        BeginVrStereoMode( vr ); cb(); EndVrStereoMode();
     }
 
-    void RenderScissor( function_t<int> cb, Rectangle& sc ){
+    void RenderScissor( function_t<void> cb, Rectangle& sc ){
         BeginScissorMode( sc.x, sc.y, sc.width, sc.height ); 
-        while( cb() == -2 ){ process::next(); } 
-        EndScissorMode();
+        cb(); EndScissorMode();
     }
 
-    void RenderShader( function_t<int> cb, Shader& shd ){
-        BeginShaderMode( shd ); while( cb() == -2 )
-        { process::next(); } EndShaderMode();
+    void RenderShader( function_t<void> cb, Shader& shd ){
+        BeginShaderMode( shd ); cb(); EndShaderMode();
     }
 
-    void Render3D( function_t<int> cb, Camera3D& cam ){
-        BeginMode3D( cam ); while( cb() == -2 )
-        { process::next(); } EndMode3D();
+    void Render3D( function_t<void> cb, Camera3D& cam ){
+        BeginMode3D( cam ); cb(); EndMode3D();
     }
 
-    void Render2D( function_t<int> cb, Camera2D& cam ){
-        BeginMode2D( cam ); while( cb() == -2 )
-        { process::next(); } EndMode2D();
+    void Render2D( function_t<void> cb, Camera2D& cam ){
+        BeginMode2D( cam ); cb(); EndMode2D();
     }
 
-    void RenderBlend( function_t<int> cb, int& mode ){
-        BeginBlendMode( mode ); while( cb() == -2 )
-        { process::next(); } EndBlendMode();
+    void RenderBlend( function_t<void> cb, int& mode ){
+        BeginBlendMode( mode ); cb(); EndBlendMode();
     }
 
-    void Render( function_t<int> cb ){
-        BeginDrawing(); while( cb() == -2 )
-        { process::next(); } EndDrawing();
+    void Render( function_t<void> cb ){
+        BeginDrawing(); cb(); EndDrawing();
     }
 
 }
-
 
 /*────────────────────────────────────────────────────────────────────────────*/
 
@@ -85,6 +76,7 @@ namespace rl {
     void Close() { process::exit(1); }
 
     void Init( Vector2 size, uint fps, string_t title ) {
+
         InitWindow( size.x, size.y, title.get() ); 
         SetTargetFPS( fps ); process::add([=](){
         coStart
@@ -95,6 +87,7 @@ namespace rl {
             }   onClose.emit();
         coStop
         });
+
     }
 
 }

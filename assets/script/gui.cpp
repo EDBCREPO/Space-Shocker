@@ -83,8 +83,8 @@ namespace rl { namespace game {
 
             uint x = 0;
 
-            DrawRectangle( 10*w/100, 86*h/100, b*2, 2*h/100, RED );
-            DrawRectangleLines( 10*w/100, 86*h/100, _b*2, 2*h/100, RED );
+            DrawRectangle( 10*w/100, 86*h/100, b*50, 2*h/100, RED );
+            DrawRectangleLines( 10*w/100, 86*h/100, _b*50, 2*h/100, RED );
 
             DrawRectangle( 10*w/100, 89*h/100, a/2, 2*h/100, YELLOW );
             DrawRectangleLines( 10*w/100, 89*h/100, _a/2, 2*h/100, YELLOW );
@@ -117,16 +117,18 @@ namespace rl { namespace game {
 
     void gui( ptr_t<Item> self ){
 
-        Item aim ( gui_aim ); Item p_stat( player_stats, self );
+        Item p_stat( player_stats, self );
+        Item aim   ( gui_aim ); 
 
         self->onDraw([=](){ 
-
             float h = GetRenderHeight(), w = GetRenderWidth();
-
-            DrawRectangleV( { 0, 0        }, { w, 7*h/100 }, BLACK );
-            DrawRectangleV( { 0, 90*h/100 }, { w, 15*h/100 }, BLACK );
-
+          //DrawRectangleV( { 0, 0        }, { w, 7*h/100 }, BLACK );
+          //DrawRectangleV( { 0, 90*h/100 }, { w, 15*h/100 }, BLACK );
             DrawFPS( 5, 5 );
+        });
+
+        self->onRemove([=](){
+            aim.close(); p_stat.close();
         });
 
     }

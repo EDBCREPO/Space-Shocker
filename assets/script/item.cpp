@@ -52,7 +52,7 @@ namespace rl { namespace game {
 
         self->onLoop([=]( float delta ){[=](){
             static bool b = rand() % 2 == 0;
-        coStart; coDelay(10000); do { item_t item;
+        coStart; coDelay(30000); do { item_t item;
             while( obj->list.size() > 5 ){ coNext; }
 
             item.state = b; item.speed = 100.0f; b =! b;

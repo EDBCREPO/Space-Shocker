@@ -31,8 +31,16 @@ namespace rl { namespace game {
                 stt()[2] = def()[2];
                 stt()[1] = def()[1];
             } else {
-                stt()[0] = def()[0];
+                if( stt()[0] < def()[0] )
+                  { stt()[0]++; }
             }   obj->d = true;
+        }));
+
+        player->SetAttr("hurt",function_t<void>([=](){
+            sos({ 
+                type::cast<float>( rand() % GetRenderWidth()  ), 
+                type::cast<float>( rand() % GetRenderHeight() ) 
+            }); obj->d = true; stt()[0]--;
         }));
 
     /*.........................................................................*/
@@ -109,7 +117,7 @@ namespace rl { namespace game {
 
     struct bullet_t {
         Vector2 pos = { 0, 0 };
-        float speed = 600.0f;
+        float speed = 800.0f;
         float size  = 10.0f;
         float angle = 0.0f;
         bool  b = 0;
@@ -128,6 +136,10 @@ namespace rl { namespace game {
         };  ptr_t<NODE> obj = new NODE();
 
     /*.........................................................................*/
+
+        player->SetAttr( "bullet", function_t<queue_t<bullet_t>>(
+            [=](){ return obj->bullet; }) 
+        );
 
         self->SetAttr( "aim", function_t<void,Vector2,float>(
             [=]( Vector2 pos, float angle ){ obj->angle = angle;
@@ -149,7 +161,6 @@ namespace rl { namespace game {
             while( stt()[ stt()[5] ] <= 0 ){ coNext; }
 
             if( IsMouseButtonDown(0) ){ 
-                console::log( "->", stt()[ stt()[5] ] );
                 coDelay(100); do {
 
                     bullet_t bullet1; 
@@ -184,7 +195,7 @@ namespace rl { namespace game {
 
     /*.........................................................................*/
 
-        self->onLoop([=]( float delta ){
+        self->onLoop([=]( float delta ){ static bool b = 0;
             
             auto x = obj->bullet.first(); while( x!=nullptr ){
             auto y = x->next;
@@ -192,21 +203,28 @@ namespace rl { namespace game {
                   if( x->data.pos.x > GetRenderWidth()  + 10 ){ goto DONE; }
                 elif( x->data.pos.y > GetRenderHeight() + 10 ){ goto DONE; }
                 elif( x->data.pos.x < -10 ){ goto DONE; }
-                elif( x->data.pos.y < -10 ){ goto DONE; } 
+                elif( x->data.pos.y < -10 ){ goto DONE; }
+
+                if( x->data.size <= 0 ){ 
+                    bullet_t flash;
+                    flash.b     = b;
+                    flash.speed = 50.0f;
+                    flash.size  = 15.0f;
+                    flash.pos   = x->data.pos;
+                    obj->flash.push( flash ); goto DONE; 
+                }
 
                 x->data.pos.x += delta * x->data.speed * cos( x->data.angle * DEG2RAD );
                 x->data.pos.y += delta * x->data.speed * sin( x->data.angle * DEG2RAD );
 
                 x = y; continue; DONE:; obj->bullet.erase(x); x = y;
-            }
+            }   b =!b;
 
             auto y = obj->flash.first(); while( y!=nullptr ){
             auto x = y->next;
 
                 if( y->data.size < 0 ){ goto NODE; }
-
                 y->data.size -= delta * y->data.speed;
-
                 y = x; continue; NODE:; obj->flash.erase(y); y = x;
             }
         
@@ -303,8 +321,8 @@ namespace rl { namespace game {
         struct NODE {
             Rectangle pos  = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 32, 32 };
             Texture   img  = LoadTexture( "assets/sprites/player/player.png" );
-            int  bullet[6] = { 100, 300, 100, 5, 5, 1 };
-            int  defolt[6] = { 100, 300, 100, 5, 5, 1 };
+            int  bullet[6] = { 5, 300, 100, 5, 5, 1 };
+            int  defolt[6] = { 5, 300, 100, 5, 5, 1 };
             Vector2   dir  = { 0, 0 };
             bool    ismov  = false;
             float     spd  = 300;
@@ -358,12 +376,16 @@ namespace rl { namespace game {
 
     /*.........................................................................*/
 
-        auto idt = timer::interval([=](){ obj->b =! obj->b; },100);
+        self->onLoop([=]( float delta ){[=](){
+        coStart;
+            coDelay(100); obj->b =! obj->b;
+        coStop;
+        }();});
 
     /*.........................................................................*/
 
         self->onLoop([=]( float delta ){[=](){
-        coStart; coDelay(2000);
+        coStart; coDelay(1000);
             if( obj->bullet[4]<=obj->defolt[4] )
               { obj->bullet[4]++; }
         coStop;
@@ -431,8 +453,8 @@ namespace rl { namespace game {
         self->onRemove([=](){
             if( IsTextureReady( obj->img ) )
               { UnloadTexture( obj->img ); }
-                timer::clear( idt ); 
-                prop.close();
+                bullet.close(); prop.close();
+                power.close();
         });
 
     }
