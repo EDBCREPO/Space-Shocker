@@ -7,7 +7,7 @@ namespace rl { namespace game {
     void player_power( ptr_t<Item> self, ptr_t<Item> player ){
 
         struct NODE {
-            Texture rec1 = LoadTexture( "assets/sprites/effect/recAn1.png" );
+            Texture rec1 = LoadTexture( "assets/sprites/effect/recharge.png" );
             queue_t<Rectangle> tail;
             float frame  = 0.0f;
             bool      b  = 0;

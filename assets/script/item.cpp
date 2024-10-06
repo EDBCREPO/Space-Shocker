@@ -6,7 +6,6 @@ namespace rl { namespace game {
 
     struct item_t {
         Color    col;
-        Texture* img;
         Vector2  dir;
         Vector2  pos;
         float   size;
@@ -17,8 +16,7 @@ namespace rl { namespace game {
     void item( ptr_t<Item> self ){
 
         struct NODE {
-            Texture img1 = LoadTexture( "assets/sprites/effect/recarga.png" ); 
-            Texture img2 = LoadTexture( "assets/sprites/effect/vida.png" ); 
+            Texture img = LoadTexture( "assets/sprites/effect/items.png" ); 
             queue_t<item_t> particle, init, list;
         };  ptr_t<NODE> obj = new NODE();
 
@@ -56,7 +54,6 @@ namespace rl { namespace game {
             while( obj->list.size() > 5 ){ coNext; }
 
             item.state = b; item.speed = 100.0f; b =! b;
-            item.img = item.state ? &obj->img1 : &obj->img2;
 
             item.pos = { 
                 type::cast<float>( rand() % GetRenderWidth()  ), 
@@ -137,10 +134,9 @@ namespace rl { namespace game {
 
         self->onDraw([=](){
             auto x = obj->list.first(); while( x!=nullptr ){
-                DrawTexturePro(
-                     *x->data.img, { 0, 0, 16, 16 }, 
-                    { x->data.pos.x, x->data.pos.y, 32, 32 }, 
-                    { 8, 8 }, 0, WHITE
+                DrawTexturePro( 
+                      obj->img, { type::cast<float>( 32 * x->data.state ), 0, 32, 32 }, 
+                    { x->data.pos.x, x->data.pos.y, 32, 32 }, { 8, 8 }, 0, WHITE
                 ); x = x->next;
             }
         });
@@ -148,8 +144,7 @@ namespace rl { namespace game {
     /*.........................................................................*/
 
         self->onRemove([=](){
-            if( IsTextureReady( obj->img2 ) ){ UnloadTexture( obj->img2 ); }
-            if( IsTextureReady( obj->img1 ) ){ UnloadTexture( obj->img1 ); } 
+            if( IsTextureReady( obj->img ) ){ UnloadTexture( obj->img ); }
         });
 
     }
