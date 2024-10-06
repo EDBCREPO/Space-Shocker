@@ -45,6 +45,27 @@ namespace rl { namespace game {
 
 namespace rl { namespace game {
 
+    void enemy_stats( ptr_t<Item> self, ptr_t<Item> gui ){
+
+        auto sht = GetScene(). GetItem("enemy").GetAttr("getHealth").as<function_t<float>>();
+
+        gui->onDraw([=](){
+
+            float h = GetRenderHeight(), w = GetRenderWidth();
+            DrawRectangleLines( 8*w/100, 4*h/100, 84*w/100, 4*h/100, WHITE );
+            DrawRectangle( 10*w/100, 3*h/100, 80*w/100, 3*h/100, BLACK );
+            DrawRectangle( 10*w/100, 3*h/100, 80*w/100*sht(), 3*h/100, WHITE );
+
+        });
+
+    }
+
+}}
+
+/*────────────────────────────────────────────────────────────────────────────*/
+
+namespace rl { namespace game {
+
     void player_stats( ptr_t<Item> self, ptr_t<Item> gui ){
 
         auto stt = GetScene().GetItem("player").GetAttr("getState").as<function_t<int*>>();
@@ -118,6 +139,7 @@ namespace rl { namespace game {
     void gui( ptr_t<Item> self ){
 
         Item p_stat( player_stats, self );
+        Item e_stat( enemy_stats, self );
         Item aim   ( gui_aim ); 
 
         self->onDraw([=](){ 
@@ -127,8 +149,10 @@ namespace rl { namespace game {
             DrawFPS( 5, 5 );
         });
 
-        self->onRemove([=](){
-            aim.close(); p_stat.close();
+        self->onRemove([=](){ 
+            p_stat.close();
+            e_stat.close();
+            aim.close();
         });
 
     }

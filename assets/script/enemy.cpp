@@ -8,8 +8,9 @@ namespace rl { namespace game {
 
         struct NODE {
             Rectangle pos = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 300, 300 };
-            Texture   img = LoadTexture( "assets/sprites/enemy/estados.png" );
+            Texture   img = LoadTexture( "assets/sprites/enemy/estados.png" ); 
             float   speed = 100.0f;
+            float  health = 1000;
             Vector2   dir;
         };  ptr_t<NODE> obj = new NODE();
 
@@ -19,6 +20,20 @@ namespace rl { namespace game {
             type::cast<float>( rand() % 2==0 ? -1 : 1 ), 
             type::cast<float>( rand() % 2==0 ? -1 : 1 ) 
         };
+
+    /*.........................................................................*/
+
+        self->SetAttr("setHealth",function_t<void,float>([=]( float value ){ 
+            obj->health = value * 1000.0f; 
+        }));
+
+        self->SetAttr("getHealth",function_t<float>([=](){ 
+            return obj->health / 1000.0f; 
+        }));
+
+        self->SetAttr("hurt",function_t<void>([=](){ 
+            obj->health -= 1.0f; 
+        }));
 
     /*.........................................................................*/
 
@@ -46,7 +61,7 @@ namespace rl { namespace game {
 
             auto x = bullet().first(); while( x != nullptr ){
                 if( CheckCollisionCircles( x->data.pos, 3, { obj->pos.x, obj->pos.y }, 90 ) )
-                  { x->data.size = 0; } x = x->next;
+                  { x->data.size = 0; obj->health--; } x = x->next;
             }
 
             if( CheckCollisionCircles( gos(), 20, { obj->pos.x, obj->pos.y }, 90 ) ){
