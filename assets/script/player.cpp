@@ -117,7 +117,7 @@ namespace rl { namespace game {
 
     struct bullet_t {
         Vector2 pos = { 0, 0 };
-        float speed = 800.0f;
+        float speed = 1000.0f;
         float size  = 10.0f;
         float angle = 0.0f;
         bool  b = 0;
@@ -325,7 +325,7 @@ namespace rl { namespace game {
             int  defolt[6] = { 5, 300, 100, 5, 5, 1 };
             Vector2   dir  = { 0, 0 };
             bool    ismov  = false;
-            float     spd  = 300;
+            float     spd  = 400;
             float     ang  = 0;
             bool        b  = 0;
         };  ptr_t<NODE> obj = new NODE();

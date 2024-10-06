@@ -9,7 +9,7 @@ namespace rl { namespace game {
         struct NODE {
             Rectangle pos = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 300, 300 };
             Texture   img = LoadTexture( "assets/sprites/enemy/estados.png" ); 
-            float   speed = 100.0f;
+            float   speed = 300.0f;
             float  health = 1000;
             Vector2   dir;
         };  ptr_t<NODE> obj = new NODE();
