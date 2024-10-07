@@ -118,9 +118,10 @@ namespace rl { namespace game {
     struct bullet_t {
         Vector2 pos = { 0, 0 };
         float speed = 1000.0f;
+        Color color = YELLOW;
         float size  = 10.0f;
         float angle = 0.0f;
-        bool  b = 0;
+        bool      b = 0;
     };  
 
     void player_bullet( ptr_t<Item> self, ptr_t<Item> player ) {
@@ -128,18 +129,13 @@ namespace rl { namespace game {
         struct NODE {
             Texture img = LoadTexture( "assets/sprites/effect/bala.png" );
             Vector2 pos[2] = { { 0, 0 }, { 0, 0 } };
-            queue_t<bullet_t> bullet;
-            queue_t<bullet_t> flash;
+            queue_t<bullet_t> bullet, bomb, flash;
             float size  = 3.0f;
             float angle = 0.0f;
             uchar type  = 0;
         };  ptr_t<NODE> obj = new NODE();
 
     /*.........................................................................*/
-
-        player->SetAttr( "bullet", function_t<queue_t<bullet_t>>(
-            [=](){ return obj->bullet; }) 
-        );
 
         self->SetAttr( "aim", function_t<void,Vector2,float>(
             [=]( Vector2 pos, float angle ){ obj->angle = angle;
@@ -151,6 +147,14 @@ namespace rl { namespace game {
         );
 
         auto stt = player->GetAttr("getState").as<function_t<int*>>();
+
+        player->SetAttr( "bullet", function_t<queue_t<bullet_t>>(
+            [=](){ return obj->bullet; }) 
+        );
+
+        player->SetAttr( "bomb", function_t<queue_t<bullet_t>>(
+            [=](){ return obj->bomb; }) 
+        );
 
     /*.........................................................................*/
 
@@ -193,6 +197,82 @@ namespace rl { namespace game {
         coStop
         }();});
 
+        self->onLoop([=]( float delta ){[=](){
+        coStart
+
+            while( stt()[3] <= 0 ){ coNext; }
+
+            if( IsMouseButtonDown(1) ){
+                coDelay(100); do {
+
+                bullet_t bullet1; 
+                bullet1.angle = obj->angle-90;
+                bullet1.pos   = obj->pos[0];
+                obj->bomb.push( bullet1 );
+
+                bullet_t bullet2; 
+                bullet2.angle = obj->angle-90;
+                bullet2.pos   = obj->pos[1];
+                obj->bomb.push( bullet2 );
+
+                stt()[3]--; } while(0);
+            }
+
+            while( IsMouseButtonDown(1) ){ coNext; } 
+
+        coStop
+        }();});
+
+    /*.........................................................................*/
+
+        self->onLoop([=]( float delta ){ 
+            
+            auto x = obj->bomb.first(); while( x!=nullptr ){
+            auto y = x->next;
+            
+                  if( x->data.pos.x > GetRenderWidth()  + 10 ){ goto DONE; }
+                elif( x->data.pos.y > GetRenderHeight() + 10 ){ goto DONE; }
+                elif( x->data.pos.x < -10 ){ goto DONE; }
+                elif( x->data.pos.y < -10 ){ goto DONE; }
+
+                if( x->data.size <= 0 ){ 
+                    bullet_t flash;
+                    flash.b     = 1;
+                    flash.speed = 50.0f;
+                    flash.size  = 30.0f;
+                    flash.color = WHITE;
+                    flash.pos   = x->data.pos;
+                    obj->flash.push( flash ); goto DONE; 
+                }
+
+                x->data.pos.x += delta * x->data.speed * cos( x->data.angle * DEG2RAD );
+                x->data.pos.y += delta * x->data.speed * sin( x->data.angle * DEG2RAD );
+
+                x = y; continue; DONE:; obj->bomb.erase(x); x = y;
+            }
+        
+        });
+
+        self->onLoop([=]( float delta ){ [=](){
+            static bool b = 0;
+        coStart; coDelay(10);
+            
+            auto x = obj->bomb.first(); while( x!=nullptr ){
+
+                bullet_t flash;
+                flash.b     = b;
+                flash.speed = 50.0f;
+                flash.size  = 15.0f;
+                flash.color = WHITE;
+                flash.pos   = x->data.pos;
+                obj->flash.push( flash );
+
+                x = x->next;
+            }   b =! b;
+        
+        coStop
+        }();});
+
     /*.........................................................................*/
 
         self->onLoop([=]( float delta ){ static bool b = 0;
@@ -219,20 +299,32 @@ namespace rl { namespace game {
 
                 x = y; continue; DONE:; obj->bullet.erase(x); x = y;
             }   b =!b;
-
-            auto y = obj->flash.first(); while( y!=nullptr ){
-            auto x = y->next;
-
-                if( y->data.size < 0 ){ goto NODE; }
-                y->data.size -= delta * y->data.speed;
-                y = x; continue; NODE:; obj->flash.erase(y); y = x;
-            }
         
         });
 
     /*.........................................................................*/
 
+        self->onLoop([=]( float delta ){
+
+            auto y = obj->flash.first(); while( y!=nullptr ){
+            auto x = y->next;
+                if( y->data.size < 0 ){ goto NODE; }
+                y->data.size -= delta * y->data.speed;
+                y = x; continue; NODE:; obj->flash.erase(y); y = x;
+            }
+
+        });
+
+    /*.........................................................................*/
+
         player->onDraw([=](){
+
+            auto z = obj->bomb.first(); while( z!=nullptr ){
+                DrawTexturePro( obj->img, { 32, 0, 32, 32 }, 
+                    { z->data.pos.x, z->data.pos.y, 20, 20 },
+                    { 10, 10 }, z->data.angle, WHITE 
+                );  z = z->next;
+            }
 
             auto x = obj->bullet.first(); while( x!=nullptr ){
                 DrawTexturePro( obj->img, { 0, 0, 32, 32 }, 
@@ -242,8 +334,8 @@ namespace rl { namespace game {
             }
 
             auto y = obj->flash.first(); while( y!=nullptr ){
-                if( y->data.b ){ DrawCircleV( y->data.pos, y->data.size, YELLOW ); }
-                else      { DrawCircleLinesV( y->data.pos, y->data.size, YELLOW ); }
+                if( y->data.b ){ DrawCircleV( y->data.pos, y->data.size, y->data.color ); }
+                else      { DrawCircleLinesV( y->data.pos, y->data.size, y->data.color ); }
                 y = y->next;
             }
 
@@ -376,20 +468,29 @@ namespace rl { namespace game {
 
     /*.........................................................................*/
 
-        self->onLoop([=]( float delta ){[=](){
-        coStart;
-            coDelay(100); obj->b =! obj->b;
-        coStop;
-        }();});
+        self->onLoop([=]( float delta ){
 
-    /*.........................................................................*/
+            [=](){
+            coStart; coDelay( 3000 );
+                if( obj->bullet[3]<=obj->defolt[3] )
+                  { obj->bullet[3]++; }
+            coStop
+            }();
 
-        self->onLoop([=]( float delta ){[=](){
-        coStart; coDelay(1000);
-            if( obj->bullet[4]<=obj->defolt[4] )
-              { obj->bullet[4]++; }
-        coStop;
-        }();});
+            [=](){
+            coStart; coDelay(1000);
+                if( obj->bullet[4]<=obj->defolt[4] )
+                  { obj->bullet[4]++; }
+            coStop;
+            }();
+
+            [=](){
+            coStart; coDelay(100); 
+                obj->b =! obj->b;
+            coStop;
+            }();
+
+        });
 
     /*.........................................................................*/
 

@@ -71,6 +71,7 @@ namespace rl { namespace game {
         self->onLoop([=]( float delta ){ if( !player.HasAttr("bullet") ){ return; }
 
             auto bullet = player.GetAttr("bullet").as<function_t<queue_t<bullet_t>>>();
+            auto bomb   = player.GetAttr("bomb").as<function_t<queue_t<bullet_t>>>();
             auto sos    = player.GetAttr("setPos").as<function_t<void,Vector2>>();
             auto gos    = player.GetAttr("getPos").as<function_t<Vector2>>();
             auto hrt    = player.GetAttr("hurt").as<function_t<void>>();
@@ -78,6 +79,11 @@ namespace rl { namespace game {
             auto x = bullet().first(); while( x != nullptr ){
                 if( CheckCollisionCircles( x->data.pos, 3, { obj->pos.x, obj->pos.y }, 90 ) )
                   { x->data.size = 0; obj->health--; } x = x->next;
+            }
+
+            auto y = bomb().first(); while( y != nullptr ){
+                if( CheckCollisionCircles( y->data.pos, 3, { obj->pos.x, obj->pos.y }, 90 ) )
+                  { y->data.size = 0; obj->health-=5; } y = y->next;
             }
 
             if( CheckCollisionCircles( gos(), 20, { obj->pos.x, obj->pos.y }, 90 ) ){
