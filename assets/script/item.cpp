@@ -67,7 +67,7 @@ namespace rl { namespace game {
 
             item_t part; part.state = 1; part.speed = 50.0f;
                    part.pos = item.pos;  part.size  = 30.0f;
-                   part.col = item.state ? GREEN : RED;
+                   part.col = item.state ? YELLOW : RED;
 
             obj->init.push( part ); obj->list.push( item );
             
@@ -108,7 +108,7 @@ namespace rl { namespace game {
             auto x = obj->list.last(); while( x!=nullptr ){
                 item_t item; item.state = b; item.speed = 50.0f;
                 item.pos = x->data.pos; item.size = 20.0f;
-                item.col = x->data.state ? GREEN : RED;
+                item.col = x->data.state ? YELLOW : RED;
                 obj->particle.push( item ); x = x->prev;
             }   b =! b;
         } while(0); coStop

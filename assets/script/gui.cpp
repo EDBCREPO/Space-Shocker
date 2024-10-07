@@ -54,6 +54,7 @@ namespace rl { namespace game {
             float h = GetRenderHeight(), w = GetRenderWidth();
             DrawRectangleLines( 8*w/100, 4*h/100, 84*w/100, 4*h/100, WHITE );
             DrawRectangle( 10*w/100, 3*h/100, 80*w/100, 3*h/100, BLACK );
+            DrawRectangleLines( 10*w/100, 3*h/100, 80*w/100, 3*h/100, WHITE );
             DrawRectangle( 10*w/100, 3*h/100, 80*w/100*sht(), 3*h/100, WHITE );
 
         });

@@ -9,6 +9,7 @@ namespace rl { namespace game {
         struct NODE {
             Rectangle pos = { GetRenderWidth()*0.5f, GetRenderHeight()*0.5f, 300, 300 };
             Texture   img = LoadTexture( "assets/sprites/enemy/estados.png" ); 
+            queue_t<Vector3> tail;
             float   speed = 300.0f;
             float  health = 1000;
             Vector2   dir;
@@ -34,6 +35,21 @@ namespace rl { namespace game {
         self->SetAttr("hurt",function_t<void>([=](){ 
             obj->health -= 1.0f; 
         }));
+
+    /*.........................................................................*/
+
+        self->onLoop([=]( float delta ){
+
+            [=](){ coStart; coDelay( 100 );
+                obj->tail.push({ obj->pos.x, obj->pos.y, 80.0f });
+            coStop; }();
+
+            auto x = obj->tail.first(); while( x != nullptr ){ auto y = x->next;
+                if( x->data.z <= 0 ){ goto DONE; } x->data.z -= delta * 80.0f;
+                x = x->next; continue; DONE:; obj->tail.erase(x); x = y;
+            }
+        
+        });
 
     /*.........................................................................*/
 
@@ -72,10 +88,18 @@ namespace rl { namespace game {
 
     /*.........................................................................*/
 
-        self->onDraw([=](){ DrawTexturePro(
-            obj->img, { 64, 0, 64, 64 },
-            obj->pos, { 150, 150 }, 0, WHITE
-        );});
+        self->onDraw([=](){ 
+            
+            auto x = obj->tail.first(); while( x != nullptr ){
+                DrawCircle( x->data.x, x->data.y, x->data.z, Color({ 45, 2, 37, 255 }) );
+                x = x->next;
+            }
+
+            DrawTexturePro(
+                obj->img, { 64, 0, 64, 64 },
+                obj->pos, { 150, 150 }, 0, WHITE
+            );
+        });
 
     }
 
