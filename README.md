@@ -1,4 +1,4 @@
-# Space-Shokers
+# Cursed Luna
 A simple game made with C++, Nodepp and raylib
 
 ## Dependencies
