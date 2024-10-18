@@ -40,6 +40,13 @@ namespace rl { namespace game {
 
         self->onLoop([=]( float delta ){
 
+            [=](){
+            coStart
+                while( obj->health > 0 ){ coNext; }
+                rl::AppendScene( rl::scene::scene_2 );
+            coStop
+            }();
+
             [=](){ coStart; coDelay( 100 );
                 obj->tail.push({ obj->pos.x, obj->pos.y, 80.0f });
             coStop; }();
@@ -87,7 +94,7 @@ namespace rl { namespace game {
             }
 
             if( CheckCollisionCircles( gos(), 20, { obj->pos.x, obj->pos.y }, 90 ) ){
-                hrt(); console::log("hit!");
+                hrt(); // console::log("hit!");
             }
 
         });
@@ -105,6 +112,7 @@ namespace rl { namespace game {
                 obj->img, { 64, 0, 64, 64 },
                 obj->pos, { 150, 150 }, 0, WHITE
             );
+            
         });
 
     }

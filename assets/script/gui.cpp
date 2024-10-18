@@ -11,20 +11,20 @@ namespace rl { namespace game {
             Vector2 pos = { 0, 0 };
         };  ptr_t<NODE> obj = new NODE(); 
         
-        HideCursor(); DisableCursor();
+        HideCursor(); // DisableCursor();
 
         self->onDraw([=](){
             if( obj->b ){
-                DrawRectangleV( Vector2Add( obj->pos, { 0, 5 }), { 1, 5 }, WHITE );
-                DrawRectangleV( Vector2Add( obj->pos, { 0,-9 }), { 1, 5 }, WHITE );
-                DrawRectangleV( Vector2Add( obj->pos, { 5, 0 }), { 5, 1 }, WHITE );
-                DrawRectangleV( Vector2Add( obj->pos, {-9, 0 }), { 5, 1 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({ 0, 5 }), { 1, 5 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({ 0,-9 }), { 1, 5 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({ 5, 0 }), { 5, 1 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({-9, 0 }), { 5, 1 }, WHITE );
                 DrawRectangleV( obj->pos, { 1, 1 }, WHITE );
             } else {
-                DrawRectangleV( Vector2Add( obj->pos, { 0, 3 }), { 1, 5 }, WHITE );
-                DrawRectangleV( Vector2Add( obj->pos, { 0,-7 }), { 1, 5 }, WHITE );
-                DrawRectangleV( Vector2Add( obj->pos, { 3, 0 }), { 5, 1 }, WHITE );
-                DrawRectangleV( Vector2Add( obj->pos, {-7, 0 }), { 5, 1 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({ 0, 3 }), { 1, 5 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({ 0,-7 }), { 1, 5 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({ 3, 0 }), { 5, 1 }, WHITE );
+                DrawRectangleV( obj->pos + Vector2({-7, 0 }), { 5, 1 }, WHITE );
             }
         });
 

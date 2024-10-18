@@ -8,6 +8,7 @@
  */
 
 #pragma once
+//      RAYGUI_IMPLEMENTATION
 
 /*────────────────────────────────────────────────────────────────────────────*/
 
@@ -27,45 +28,6 @@ namespace rl {
 
 /*────────────────────────────────────────────────────────────────────────────*/
 
-namespace rl {
-
-    void RenderCanva( function_t<void> cb, RenderTexture2D& txt ){
-        BeginTextureMode( txt ); cb(); EndTextureMode();
-    }
-
-    void RenderVR( function_t<void> cb, VrStereoConfig& vr ){
-        BeginVrStereoMode( vr ); cb(); EndVrStereoMode();
-    }
-
-    void RenderScissor( function_t<void> cb, Rectangle& sc ){
-        BeginScissorMode( sc.x, sc.y, sc.width, sc.height ); 
-        cb(); EndScissorMode();
-    }
-
-    void RenderShader( function_t<void> cb, Shader& shd ){
-        BeginShaderMode( shd ); cb(); EndShaderMode();
-    }
-
-    void Render3D( function_t<void> cb, Camera3D& cam ){
-        BeginMode3D( cam ); cb(); EndMode3D();
-    }
-
-    void Render2D( function_t<void> cb, Camera2D& cam ){
-        BeginMode2D( cam ); cb(); EndMode2D();
-    }
-
-    void RenderBlend( function_t<void> cb, int& mode ){
-        BeginBlendMode( mode ); cb(); EndBlendMode();
-    }
-
-    void Render( function_t<void> cb ){
-        BeginDrawing(); cb(); EndDrawing();
-    }
-
-}
-
-/*────────────────────────────────────────────────────────────────────────────*/
-
 namespace rl { 
 
     event_t<>      onClose;
@@ -73,7 +35,7 @@ namespace rl {
     event_t<>      onDraw;
     event_t<float> onLoop;
 
-    void Close() { process::exit(1); }
+    void Close() { CloseWindow(); process::exit(1); }
 
     void Init( Vector2 size, uint fps, string_t title ) {
 
@@ -132,6 +94,8 @@ public:
                 rl::onDraw.off( idd );
                 rl::onLoop.off( idl );
         });
+
+        onClose([=](){ self->close(); });
         
     }
 
@@ -211,6 +175,8 @@ public:
                 rl::onLoop.off( idl );
         });
 
+        onClose([=](){ self->close(); });
+
     }
 
     Scene() noexcept : obj( new NODE() ){}
@@ -284,16 +250,78 @@ namespace rl {
     
     ptr_t<Scene> Room = new Scene();
 
-    Scene& GetScene() { return *Room; }
-
     void RemoveScene(){ Room->close(); }
 
+    Scene& GetScene() { return *Room; }
+
+    void SetScene( Scene& Scene ) { *Room = Scene; }
+
     template< class T, class... V >
-    Scene& AppendScene( T cb, V... args ){ 
-         RemoveScene(); Room = type::bind( Scene( cb, args... ) );
-         return *Room;
+    Scene& AppendScene( T cb, V... args ){ RemoveScene(); 
+        Room = type::bind( Scene( cb, args... ) );
+        return *Room;
     }
 
-    void SetScene( Scene scene ){ Room = type::bind( scene ); }
-
 }
+
+/*────────────────────────────────────────────────────────────────────────────*/
+
+rl::Vector2 operator^( rl::Vector2 v1, rl::Vector2 v2 ){ return rl::Vector2Multiply( v1, v2 ); }
+
+rl::Vector2 operator-( rl::Vector2 v1, rl::Vector2 v2 ){ return rl::Vector2Subtract( v1, v2 ); }
+
+rl::Vector2 operator-( rl::Vector2 v1, float f1 ){ return rl::Vector2SubtractValue( v1, f1 ); }
+
+rl::Vector2 operator/( rl::Vector2 v1, rl::Vector2 v2 ){ return rl::Vector2Divide( v1, v2 ); }
+
+float operator*( rl::Vector2 v1, rl::Vector2 v2 ){ return rl::Vector2DotProduct( v1, v2 ); }
+
+rl::Vector2 operator+( rl::Vector2 v1, rl::Vector2 v2 ){ return rl::Vector2Add( v1, v2 ); }
+
+rl::Vector2 operator+( rl::Vector2 v1, float f1 ){ return rl::Vector2AddValue( v1, f1 ); }
+
+rl::Vector2 operator*( rl::Vector2 v1, float f1 ){ return rl::Vector2Scale( v1, f1 ); }
+
+rl::Vector2 operator-( rl::Vector2 v1 ){ return rl::Vector2Negate( v1 ); }
+
+/*────────────────────────────────────────────────────────────────────────────*/
+
+rl::Vector3 operator^( rl::Vector3 v1, rl::Vector3 v2 ){ return rl::Vector3Multiply( v1, v2 ); }
+
+rl::Vector3 operator-( rl::Vector3 v1, rl::Vector3 v2 ){ return rl::Vector3Subtract( v1, v2 ); }
+
+rl::Vector3 operator-( rl::Vector3 v1, float f1 ){ return rl::Vector3SubtractValue( v1, f1 ); }
+
+rl::Vector3 operator/( rl::Vector3 v1, rl::Vector3 v2 ){ return rl::Vector3Divide( v1, v2 ); }
+
+float operator*( rl::Vector3 v1, rl::Vector3 v2 ){ return rl::Vector3DotProduct( v1, v2 ); }
+
+rl::Vector3 operator+( rl::Vector3 v1, rl::Vector3 v2 ){ return rl::Vector3Add( v1, v2 ); }
+
+rl::Vector3 operator+( rl::Vector3 v1, float f1 ){ return rl::Vector3AddValue( v1, f1 ); }
+
+rl::Vector3 operator*( rl::Vector3 v1, float f1 ){ return rl::Vector3Scale( v1, f1 ); }
+
+rl::Vector3 operator-( rl::Vector3 v1 ){ return rl::Vector3Negate( v1 ); }
+
+/*────────────────────────────────────────────────────────────────────────────*/
+
+rl::Vector4 operator^( rl::Vector4 v1, rl::Vector4 v2 ){ return rl::Vector4Multiply( v1, v2 ); }
+
+rl::Vector4 operator-( rl::Vector4 v1, rl::Vector4 v2 ){ return rl::Vector4Subtract( v1, v2 ); }
+
+rl::Vector4 operator-( rl::Vector4 v1, float f1 ){ return rl::Vector4SubtractValue( v1, f1 ); }
+
+rl::Vector4 operator/( rl::Vector4 v1, rl::Vector4 v2 ){ return rl::Vector4Divide( v1, v2 ); }
+
+float operator*( rl::Vector4 v1, rl::Vector4 v2 ){ return rl::Vector4DotProduct( v1, v2 ); }
+
+rl::Vector4 operator+( rl::Vector4 v1, rl::Vector4 v2 ){ return rl::Vector4Add( v1, v2 ); }
+
+rl::Vector4 operator+( rl::Vector4 v1, float f1 ){ return rl::Vector4AddValue( v1, f1 ); }
+
+rl::Vector4 operator*( rl::Vector4 v1, float f1 ){ return rl::Vector4Scale( v1, f1 ); }
+
+rl::Vector4 operator-( rl::Vector4 v1 ){ return rl::Vector4Negate( v1 ); }
+
+/*────────────────────────────────────────────────────────────────────────────*/

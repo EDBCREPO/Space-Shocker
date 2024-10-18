@@ -12,6 +12,7 @@ namespace rl { namespace game {
             float frame  = 0.0f;
             bool      b  = 0;
             bool      d  = 0;
+            bool      h  = 1;
         };  ptr_t<NODE> obj = new NODE();
 
     /*.........................................................................*/
@@ -27,7 +28,6 @@ namespace rl { namespace game {
 
         player->SetAttr("recharge",function_t<void,bool>([=]( bool d ){
             if( d == true ){
-                stt()[3] = def()[3];
                 stt()[2] = def()[2];
                 stt()[1] = def()[1];
             } else {
@@ -37,11 +37,18 @@ namespace rl { namespace game {
         }));
 
         player->SetAttr("hurt",function_t<void>([=](){
-            sos({ 
+            if( obj->h == true ){ return; } sos({ 
                 type::cast<float>( rand() % GetRenderWidth()  ), 
                 type::cast<float>( rand() % GetRenderHeight() ) 
-            }); obj->d = true; stt()[0]--;
+            }); obj->d = true; stt()[0]--; obj->h = true;
         }));
+
+        self->onLoop([=]( float delta ){[=](){
+        coStart
+            while( obj->h == false ){ coNext; }
+            coDelay(1000); obj->h = false;
+        coStop
+        }();});
 
     /*.........................................................................*/
 
@@ -469,6 +476,13 @@ namespace rl { namespace game {
     /*.........................................................................*/
 
         self->onLoop([=]( float delta ){
+
+            [=](){
+            coStart
+                while( obj->bullet[0]>0 ){ coNext; }
+                rl::AppendScene( rl::scene::scene_0 );
+            coStop
+            }();
 
             [=](){
             coStart; coDelay( 3000 );

@@ -3,8 +3,8 @@ A simple game made with C++, Nodepp and raylib
 
 ## Dependencies
 ```bash
-Nodepp - https://github.com/NodeppOficial/nodepp
-Raylib - https://www.raylib.com/
+📌Nodepp: https://github.com/NodeppOficial/nodepp
+📌Raylib: https://www.raylib.com/
 ```
 
 ## Preview
